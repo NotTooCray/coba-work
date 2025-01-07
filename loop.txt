@@ -1,0 +1,41 @@
+more robust version with error handling and timeout:
+
+```bash
+#!/bin/bash
+
+# Define array of hostnames
+hosts=(
+    "server1.example.com"
+    "server2.example.com"
+    "server3.example.com"
+)
+
+# Function to get uptime
+check_uptime() {
+    local host=$1
+    # Set timeout to 5 seconds, you can adjust this
+    timeout 5 ssh -n "$host" uptime 2>/dev/null
+    local status=$?
+    
+    if [ $status -eq 0 ]; then
+        return 0
+    elif [ $status -eq 124 ]; then
+        echo "Connection timed out"
+        return 1
+    else
+        echo "Connection failed"
+        return 1
+    fi
+}
+
+# Main loop
+for host in "${hosts[@]}"; do
+    echo -n "$host: "
+    if output=$(check_uptime "$host"); then
+        echo "$output"
+    else
+        echo "ERROR: $output"
+    fi
+done
+```
+
